@@ -15,7 +15,9 @@ RUN apt-get update \
        libfreetype6-dev libjpeg62-turbo-dev libpng-dev libzip-dev libicu-dev libonig-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j"$(nproc)" pdo_mysql mbstring zip intl gd exif \
-    && a2enmod rewrite headers \
+    && a2dismod mpm_event mpm_worker >/dev/null 2>&1 || true
+
+RUN a2enmod mpm_prefork rewrite headers \
     && rm -rf /var/lib/apt/lists/*
 
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
@@ -28,7 +30,8 @@ COPY railway-start.sh /usr/local/bin/railway-start
 
 RUN chmod +x /usr/local/bin/railway-start \
     && mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
-    && chown -R www-data:www-data storage bootstrap/cache
+    && chown -R www-data:www-data storage bootstrap/cache \
+    && apache2ctl -t
 
 EXPOSE 80
 ENTRYPOINT ["/usr/local/bin/railway-start"]
