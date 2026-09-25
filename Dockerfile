@@ -19,9 +19,12 @@ RUN apt-get update \
 
 WORKDIR /var/www/html
 COPY --from=payload /app /var/www/html
-COPY architecture-overlay.tar.gz /tmp/architecture-overlay.tar.gz
-RUN tar -xzf /tmp/architecture-overlay.tar.gz -C /var/www/html \
-    && rm -f /tmp/architecture-overlay.tar.gz
+COPY overlay.parts/ /tmp/overlay.parts/
+RUN cat /tmp/overlay.parts/*.b64 > /tmp/overlay.b64 \
+    && base64 -d /tmp/overlay.b64 > /tmp/architecture-overlay.tar.gz \
+    && echo "24d07b0362b7f0c7219100da9d386d6f14de0c55d7d4360be13410c89806577e  /tmp/architecture-overlay.tar.gz" | sha256sum -c - \
+    && tar -xzf /tmp/architecture-overlay.tar.gz -C /var/www/html \
+    && rm -rf /tmp/overlay.parts /tmp/overlay.b64 /tmp/architecture-overlay.tar.gz
 COPY railway-start.sh /usr/local/bin/railway-start
 RUN chmod +x /usr/local/bin/railway-start \
     && mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
