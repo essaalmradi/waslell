@@ -147,8 +147,5 @@ remote_sha="$(rclone cat "$remote_file" --s3-no-check-bucket | sha256sum | awk '
 [[ "$remote_sha" == "$backup_sha" ]] || fail 'backup SHA-256 verification failed'
 log "backup verified in bucket (key=$object_key bytes=$backup_size sha256=$backup_sha)"
 
-php artisan migrate --force --no-interaction
-log 'migrate --force completed successfully'
-php artisan migrate:status --no-interaction >/dev/null
-log 'post-migration status check passed'
-log 'pre-deploy validation, backup, verification, and migration completed successfully'
+log 'automatic migrations intentionally skipped on the existing production database'
+log 'pre-deploy validation and verified database backup completed successfully'
