@@ -15,23 +15,17 @@ RUN apt-get update \
        libfreetype6-dev libjpeg62-turbo-dev libpng-dev libzip-dev libicu-dev libonig-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j"$(nproc)" pdo_mysql mbstring zip intl gd exif \
-    && a2dismod mpm_event mpm_worker >/dev/null 2>&1 || true
-
-RUN a2enmod mpm_prefork rewrite headers \
     && rm -rf /var/lib/apt/lists/*
 
-ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 WORKDIR /var/www/html
-
 COPY --from=payload /app /var/www/html
-COPY --from=payload /payload/database.sql.gz.enc /opt/waslek/database.sql.gz.enc
-COPY --from=payload /app/docker/000-default.conf /etc/apache2/sites-available/000-default.conf
+COPY architecture-overlay.tar.gz /tmp/architecture-overlay.tar.gz
+RUN tar -xzf /tmp/architecture-overlay.tar.gz -C /var/www/html \
+    && rm -f /tmp/architecture-overlay.tar.gz
 COPY railway-start.sh /usr/local/bin/railway-start
-
 RUN chmod +x /usr/local/bin/railway-start \
     && mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
-    && chown -R www-data:www-data storage bootstrap/cache \
-    && apache2ctl -t
+    && chown -R www-data:www-data storage bootstrap/cache
 
 EXPOSE 80
 ENTRYPOINT ["/usr/local/bin/railway-start"]
