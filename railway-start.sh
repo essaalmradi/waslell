@@ -9,7 +9,6 @@ php artisan config:clear >/dev/null 2>&1 || true
 php artisan route:clear >/dev/null 2>&1 || true
 php artisan view:clear >/dev/null 2>&1 || true
 
-echo "[waslek] applying database migrations"
-php artisan migrate --force --no-interaction
+echo "[waslek] startup ready; migrations were handled by verified pre-deploy"
 
 exec "$@"
